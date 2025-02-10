@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapporto Lavori</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+<link rel="manifest" href="manifest.json">
+<script>
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js").then(() => {
+            console.log("Service Worker registrato!");
+        });
+    }
+</script>
+
+</head>
+
+<body class="p-6 bg-gray-100">
+    <h1 class="text-2xl font-bold mb-4">Rapporto Lavori</h1>
+    <form id="rapportoForm" class="bg-white p-6 rounded-lg shadow-md">
+        <div class="mb-4">
+            <label for="data" class="block font-medium">Data:</label>
+            <input type="date" id="data" name="data" required class="border rounded p-2 w-full">
+        </div>
+
+        <div id="campi-clonabili">
+            <script>
+                for (let i = 0; i < 5; i++) {
+                    document.write(`
+                    <div class="p-4 mb-4 bg-gray-50 border rounded-lg">
+                        <h3 class="text-lg font-semibold mb-2">Indirizzo</h3>
+                        <label for="indirizzo${i}" class="block">Indirizzo:</label>
+                        <input type="text" id="indirizzo${i}" name="indirizzo${i}" class="border rounded p-2 w-full mb-2">
+                        <div id="lavoratori-container${i}">
+                            ${Array(5).fill(0).map((_, j) => `
+                            <div class="flex items-center space-x-2 mb-2">
+                                <select id="nome${i}_${j}" name="nome${i}_${j}" class="border rounded p-2 w-1/3">
+                                    <option value="">Seleziona</option>
+                                    <option value="LV1">LV1</option>
+                                    <option value="LV2">LV2</option>
+                                </select>
+                                <label for="ore${i}_${j}" class="font-medium">Ore:</label>
+                                <input type="number" id="ore${i}_${j}" name="ore${i}_${j}" min="0" class="border rounded p-2 w-1/4">
+                            </div>`).join('')}
+                        </div>
+                        <label for="kmAndata${i}" class="block">KM andata:</label>
+                        <input type="number" id="kmAndata${i}" name="kmAndata${i}" class="border rounded p-2 w-full mb-2">
+                        <label for="kmRitorno${i}" class="block">KM ritorno:</label>
+                        <input type="number" id="kmRitorno${i}" name="kmRitorno${i}" class="border rounded p-2 w-full mb-2">
+                        <label for="telepass${i}" class="block">Costo Telepass (€):</label>
+                        <input type="number" id="telepass${i}" name="telepass${i}" step="0.01" class="border rounded p-2 w-full mb-2">
+                        <label for="note${i}" class="block">Note:</label>
+                        <textarea id="note${i}" name="note${i}" class="border rounded p-2 w-full h-20"></textarea>
+                    </div>
+                    `);
+                }
+            </script>
+        </div>
+
+        <div id="totaleOre" class="font-bold text-lg mb-4">Totale Ore: <span id="oreTotali">0</span></div>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded shadow">Invia via WhatsApp</button>
+    </form>
+
+    <script>
+        document.getElementById("rapportoForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            
+            let messaggio = "Rapporto Lavori:\n";
+            const data = document.getElementById("data").value;
+            messaggio += `Data: ${data}\n\n`;
+            
+            for (let i = 0; i < 5; i++) {
+                let indirizzo = document.getElementById(`indirizzo${i}`).value;
+                if (indirizzo) {
+                    messaggio += `Indirizzo ${i + 1}: ${indirizzo}\n`;
+                    for (let j = 0; j < 5; j++) {
+                        let nome = document.getElementById(`nome${i}_${j}`).value;
+                        let ore = document.getElementById(`ore${i}_${j}`).value;
+                        if (nome && ore) {
+                            messaggio += ` - ${nome}: ${ore} ore\n`;
+                        }
+                    }
+                    let kmAndata = document.getElementById(`kmAndata${i}`).value;
+                    let kmRitorno = document.getElementById(`kmRitorno${i}`).value;
+                    let telepass = document.getElementById(`telepass${i}`).value;
+                    let note = document.getElementById(`note${i}`).value;
+                    if (kmAndata) messaggio += `KM Andata: ${kmAndata}\n`;
+                    if (kmRitorno) messaggio += `KM Ritorno: ${kmRitorno}\n`;
+                    if (telepass) messaggio += `Costo Telepass: ${telepass}€\n`;
+                    if (note) messaggio += `Note: ${note}\n`;
+                    messaggio += "\n";
+                }
+            }
+            
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(messaggio)}`;
+            window.open(whatsappUrl, "_blank");
+        });
+    </script>
+</body>
+</html>
